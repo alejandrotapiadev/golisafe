@@ -1,4 +1,4 @@
-# ![Vista previa del proyecto](assets/gifs/dflvh2b-b6b090a2-e2f1-4fe1-ac60-422c9d0de526.gif) Gestor de Contraseñas Personales
+# ![Vista previa del proyecto](assets/gifs/dflvh2b-b6b090a2-e2f1-4fe1-ac60-422c9d0de526.gif) Golisafe - Contraseñas de bolsillo
 
 Aplicación de escritorio desarrollada en Python para gestionar contraseñas personales de forma segura. Utiliza una interfaz gráfica con Tkinter, almacenamiento local con SQLite y cifrado con la librería `cryptography`.
 
