@@ -48,3 +48,25 @@ def save_password(site, username, password):
     """, {"site": site, "username": username, "password": password})
     conn.commit()
     conn.close()
+
+       
+
+
+def getAllPasswords():
+    """
+    Recupera todas las contraseñas de la base de datos.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT site, username, password FROM passwords")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def delete_password(site, user):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM passwords WHERE site=? AND username=?", (site, user))
+    conn.commit()
+    conn.close()
+
