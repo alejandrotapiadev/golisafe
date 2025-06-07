@@ -12,14 +12,31 @@ import os
 
 def start_app():
     init_db()
+    
+    def calcular_posicion_centrada(ventana, ancho, alto):
+        ancho_pantalla = ventana.winfo_screenwidth()
+        alto_pantalla = ventana.winfo_screenheight()
+        pos_x = (ancho_pantalla // 2) - (ancho // 2)
+        pos_y = (alto_pantalla // 2) - (alto // 2)
+        return pos_x, pos_y
 
-    ctk.set_appearance_mode("dark")
+
+    # Configurar el modo de apariencia y tema
+    ctk.set_appearance_mode("System")
     ctk.set_default_color_theme("green")
 
     app = ctk.CTk()
     app.title("GoliSafe")
-    app.geometry("300x200")
-    #app.resizable(False, False)
+
+    # Tamaño de ventana
+    ancho_ventana = 300
+    alto_ventana = 200
+
+
+    # Calcular coordenadas para centrar
+    pos_x, pos_y = calcular_posicion_centrada(app, ancho_ventana, alto_ventana)
+    # Definir geometría con posición
+    app.geometry(f"{ancho_ventana}x{alto_ventana}+{pos_x}+{pos_y}")
     
 
     # Establecer icono de la aplicación
@@ -28,6 +45,8 @@ def start_app():
     icon_path = os.path.normpath(icon_path)  # para normalizar ruta
     app.iconbitmap(icon_path)
 
+    # Fuente monoespaciada para etiquetas
+    fuente_mono = ctk.CTkFont(family="Courier New", size=15, weight="bold")
 
     #ESTILO TABLA
     style = ThemedStyle(app)
@@ -35,22 +54,45 @@ def start_app():
 
     # Estilo general del Treeview (filas y fondo)
     style.configure("Treeview",
+                    bordercolor="#7f5af0",  # Accent purple border
+                    relief="solid",
+                    borderwidth=2,
                     background="#2e2e2e",
                     foreground="white",
                     fieldbackground="#2e2e2e",
                     rowheight=30,
-                    bordercolor="#444")
+                    font=fuente_mono)
 
     # Estilo específico de la cabecera
     style.configure("Treeview.Heading",
                     background="#444444",
                     foreground="white",
-                    font=('Segoe UI', 10, 'bold'))
+                font=(fuente_mono.actual('family'), fuente_mono.actual('size'), 'bold'))  # Fuente para encabezados
     
     # Color al seleccionar una fila
     style.map("Treeview",
-            background=[("selected", "#006b75")],     # Fondo cuando está seleccionada
+            background=[("selected", "#7f5af0")],     # Fondo cuando está seleccionada
             foreground=[("selected", "white")])       # Texto cuando está seleccionada
+
+
+
+
+
+    def ajustar_columnas(treeview, fuente):
+        for col in treeview["columns"]:
+            # Obtener el texto del encabezado
+            header_text = col
+            max_ancho = fuente.measure(header_text)
+
+            # Medir el ancho del contenido de cada celda de la columna
+            for item in treeview.get_children():
+                valor = treeview.set(item, col)
+                ancho = fuente.measure(valor)
+                if ancho > max_ancho:
+                    max_ancho = ancho
+
+            # Agregar algo de espacio extra (padding)
+            treeview.column(col, width=max_ancho + 20)
 
 
 
@@ -68,18 +110,34 @@ def start_app():
         app.update_idletasks()  # Actualiza el layout antes de obtener tamaño
 
         if frame == frame_principal:
-            app.geometry("300x200")
+            ancho = 300
+            alto = 200
         else:
             # Ajustar tamaño automáticamente al nuevo contenido
-            frame_width = frame.winfo_reqwidth() + 20 
-            frame_height = frame.winfo_reqheight() + 20 
-            app.geometry(f"{frame_width}x{frame_height}")
+            ancho = frame.winfo_reqwidth() + 20
+            alto = frame.winfo_reqheight() + 20
 
-    def crear_campo(root, texto_label, ocultar=False):
-        label = ctk.CTkLabel(root, text=texto_label)
+        # Calcular posición para centrar
+        pos_x, pos_y = calcular_posicion_centrada(app, ancho, alto)
+        # Definir geometría con posición
+
+        # Cambiar geometría con posición centrada respecto al monitor
+        app.geometry(f"{ancho}x{alto}+{pos_x}+{pos_y}")
+
+    def crear_label(root, texto):
+        label = ctk.CTkLabel(root, text=texto, font=fuente_mono, text_color="#e0e6ed")
         label.pack(pady=(10, 2))
-        campo = ctk.CTkEntry(root, width=300, show="*" if ocultar else "")
-        campo.pack()
+        return label
+
+    def crear_entry(root, texto_inicial=""):
+        entry = ctk.CTkEntry(root, width=300, font=fuente_mono, text_color="#e0e6ed", placeholder_text=texto_inicial)
+        entry.pack()
+        return entry
+
+
+    def crear_campo(root, texto_label, ocultar=False, texto_inicial=""):
+        crear_label(root, texto_label)
+        campo = crear_entry(root, texto_inicial)
         return campo
     
 
@@ -90,14 +148,22 @@ def start_app():
             command=comando,
             width=200,
             height=40,
-            font=("Segoe UI", 16)
+            corner_radius=35,
+            font=fuente_mono,
+            fg_color="#23272e",         # dark background for button
+            hover_color="#343b48",      # slightly lighter on hover
+            text_color="#f8fafc",       # almost white text
+            border_color="#7f5af0",     # accent purple border
+            border_width=2,
         )
+
+
     
     # PANTALLA: GUARDAR CONTRASEÑA
     
     campo_siteWeb = crear_campo(frame_guardar, "Sitio web:")
     campo_user = crear_campo(frame_guardar, "Usuario:")
-    campo_pass = crear_campo(frame_guardar, "Contraseña:", ocultar=False)
+    campo_pass = crear_campo(frame_guardar, "Contraseña:")
     
     def guardar():
         site = campo_siteWeb.get()
@@ -123,27 +189,6 @@ def start_app():
     boton_volverMenu.pack(pady=10)
 
     # PANTALLA: VER CONTRASEÑAS
-    """
-    def cargar_contrasenas():
-        text_box.delete("1.0", tk.END)
-        filtro = campo_busqueda.get().lower()
-        contrasenas = getAllPasswords()
-
-        if not contrasenas:
-            text_box.tag_config("center", justify="center", foreground="white")
-            text_box.insert(tk.END, "Aun no hay contraseñas guardadas.")
-            text_box.tag_add("center", "1.0", "end")
-            return
-
-        encontrados = 0
-        for site, user, passwd in contrasenas:
-            if filtro in site.lower() or filtro in user.lower():
-                text_box.insert(tk.END, f"Sitio \u2192 {site}\nUsuario \u2192 {user}\nContraseña \u2192 {passwd}\n\n")
-                encontrados += 1
-
-        if encontrados == 0:
-            text_box.insert(tk.END, f"No se encontraron coincidencias para: '{filtro}'")
-        """
 
     def cargar_contrasenas():
         filtro = campo_busqueda.get().lower()
@@ -160,6 +205,9 @@ def start_app():
 
         if encontrados == 0:
             messagebox.showinfo("Información", f"No se encontraron contraseñas para: '{filtro}'")
+
+        ajustar_columnas(tree, fuente_mono)
+        
 
     def eliminar_contrasena():
         seleccion = tree.selection()
@@ -189,22 +237,19 @@ def start_app():
     # Entrada de búsqueda
     campo_busqueda = ctk.CTkEntry(frame_ver, width=300, placeholder_text="Buscar por sitio o usuario...")
     campo_busqueda.pack(pady=(10, 5))
-    boton_buscar = ctk.CTkButton(frame_ver, text="Buscar", command=cargar_contrasenas)
+    boton_buscar = crear_boton(frame_ver, "Buscar", cargar_contrasenas)
     boton_buscar.pack(pady=(0, 5))
 
 
-    # Caja de texto para mostrar resultados
-    #text_box = ctk.CTkTextbox(frame_ver, width=400, height=300, font=("Segoe UI", 15))
-    #text_box.pack(pady=5)
 
     # Tabla para mostrar contraseñas
     tree = ttk.Treeview(frame_ver, columns=("site", "user", "password"), show="headings", height=10)
     tree.heading("site", text="Sitio Web")
     tree.heading("user", text="Usuario")
     tree.heading("password", text="Contraseña")
-    tree.column("site", width=120)
-    tree.column("user", width=100)
-    tree.column("password", width=120)
+    tree.column("site", width=120, stretch=True)
+    tree.column("user", width=100, stretch=True)
+    tree.column("password", width=120, stretch=True)
     tree.pack(pady=10)
 
     boton_eliminar = crear_boton(frame_ver, "Eliminar Contraseña", eliminar_contrasena)
@@ -229,9 +274,10 @@ def start_app():
         "Ver contraseña",
         ir_a_ver_contrasenas
     )
-    boton_guardarPass.pack(pady=10, padx=10)
+    boton_guardarPass.pack(pady=(40,10), padx=10)
     boton_verPass.pack(pady=10, padx=10)
-
+    #boton_guardarPass.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+    #boton_verPass.place(relx=0.5, rely=0.2, anchor=tk.CENTER)
 
 
     # Mostrar pantalla por defecto (de esta forma al inicial la app se muestra la pantalla de guardar contraseñas de forma automatica)
