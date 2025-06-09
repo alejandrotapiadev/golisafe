@@ -7,17 +7,32 @@ from tkinter import messagebox
 from tkinter import ttk
 import tkinter as tk
 from ttkthemes import ThemedStyle
-from database import init_db, save_password, getAllPasswords, delete_password
+from screeninfo import get_monitors
+from backend.database import init_db, save_password, getAllPasswords, delete_password
 import os
 
 def start_app():
     init_db()
     
+    def get_monitor_de_ventana(ventana):
+        ventana.update_idletasks()
+        x = ventana.winfo_rootx()
+        y = ventana.winfo_rooty()
+
+        for monitor in get_monitors():
+            if monitor.x <= x < monitor.x + monitor.width and monitor.y <= y < monitor.y + monitor.height:
+                return monitor
+
+        # Si no encuentra un monitor específico (caso raro), usa el principal
+        return get_monitors()[0]
+
+
     def calcular_posicion_centrada(ventana, ancho, alto):
-        ancho_pantalla = ventana.winfo_screenwidth()
-        alto_pantalla = ventana.winfo_screenheight()
-        pos_x = (ancho_pantalla // 2) - (ancho // 2)
-        pos_y = (alto_pantalla // 2) - (alto // 2)
+        monitor = get_monitor_de_ventana(ventana)
+
+        pos_x = monitor.x + (monitor.width // 2) - (ancho // 2)
+        pos_y = monitor.y + (monitor.height // 2) - (alto // 2)
+
         return pos_x, pos_y
 
 
@@ -40,8 +55,8 @@ def start_app():
     
 
     # Establecer icono de la aplicación
-    base_dir = os.path.dirname(os.path.abspath(__file__))  # ruta carpeta src
-    icon_path = os.path.join(base_dir, "..", "assets", "icon", "logo3.ico")
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # ruta carpeta proyectos/golisafe
+    icon_path = os.path.join(base_dir, "..", "assets", "icon", "logo4.ico")
     icon_path = os.path.normpath(icon_path)  # para normalizar ruta
     app.iconbitmap(icon_path)
 
@@ -64,10 +79,12 @@ def start_app():
                     font=fuente_mono)
 
     # Estilo específico de la cabecera
-    style.configure("Treeview.Heading",
-                    background="#444444",
-                    foreground="white",
-                font=(fuente_mono.actual('family'), fuente_mono.actual('size'), 'bold'))  # Fuente para encabezados
+    style.configure(
+        "Treeview.Heading",
+        background="#444444",
+        foreground="white",
+        font=(fuente_mono.actual('family'), fuente_mono.actual('size') + 1, 'bold'),  # Increase size for headings
+    )
     
     # Color al seleccionar una fila
     style.map("Treeview",
@@ -130,7 +147,15 @@ def start_app():
         return label
 
     def crear_entry(root, texto_inicial=""):
-        entry = ctk.CTkEntry(root, width=300, font=fuente_mono, text_color="#e0e6ed", placeholder_text=texto_inicial)
+        entry = ctk.CTkEntry(
+            root,
+            width=300,
+            font=fuente_mono,
+            text_color="#e0e6ed",
+            placeholder_text=texto_inicial,
+            border_color="#a3a3c2",  # Softer purple/grayish border
+            border_width=1
+        )
         entry.pack()
         return entry
 
@@ -170,6 +195,8 @@ def start_app():
         user = campo_user.get()
         passwd = campo_pass.get()
 
+        #password_cifrada = cipher.encrypt(password.encode())
+
         if site and user and passwd:
             save_password(site, user, passwd)
             messagebox.showinfo("Éxito", "Contraseña guardada")
@@ -191,7 +218,8 @@ def start_app():
     # PANTALLA: VER CONTRASEÑAS
 
     def cargar_contrasenas():
-        filtro = campo_busqueda.get().lower()
+        filtro = campo_busqueda.get().lower().strip()
+        
         for item in tree.get_children():
             tree.delete(item)
 
@@ -205,6 +233,8 @@ def start_app():
 
         if encontrados == 0:
             messagebox.showinfo("Información", f"No se encontraron contraseñas para: '{filtro}'")
+            campo_busqueda.delete(0, tk.END)
+            cargar_contrasenas()
 
         ajustar_columnas(tree, fuente_mono)
         
@@ -223,8 +253,9 @@ def start_app():
         confirmar = messagebox.askyesno("Confirmar", f"¿Quieres eliminar la contraseña para '{site}' (usuario: {user})?")
         if confirmar:
             delete_password(site, user)
-            cargar_contrasenas()
             messagebox.showinfo("Éxito", "Contraseña eliminada")
+            campo_busqueda.delete(0, tk.END) # Limpiar campo de búsqueda
+            cargar_contrasenas()
 
 
 
@@ -235,7 +266,7 @@ def start_app():
 
 
     # Entrada de búsqueda
-    campo_busqueda = ctk.CTkEntry(frame_ver, width=300, placeholder_text="Buscar por sitio o usuario...")
+    campo_busqueda = crear_campo(frame_ver,texto_label="" , texto_inicial="Buscar por sitio o usuario...")
     campo_busqueda.pack(pady=(10, 5))
     boton_buscar = crear_boton(frame_ver, "Buscar", cargar_contrasenas)
     boton_buscar.pack(pady=(0, 5))

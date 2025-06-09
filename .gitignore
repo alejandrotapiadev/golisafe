@@ -12,3 +12,7 @@ __pycache__/
 
 # Variables de entorno
 .env
+
+
+# Claves y llaves privadas
+clave.key

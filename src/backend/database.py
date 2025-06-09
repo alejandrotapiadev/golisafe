@@ -13,7 +13,7 @@ db_name = os.getenv("DB_NAME", "password.db")
 
 # ruta donde se creara la base de datos
 DB_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     db_folder,
     db_name
 )
