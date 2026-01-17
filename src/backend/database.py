@@ -13,7 +13,7 @@ db_name = os.getenv("DB_NAME", "password.db")
 
 # ruta donde se creara la base de datos
 DB_PATH = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     db_folder,
     db_name
 )
@@ -48,3 +48,25 @@ def save_password(site, username, password):
     """, {"site": site, "username": username, "password": password})
     conn.commit()
     conn.close()
+
+       
+
+
+def getAllPasswords():
+    """
+    Recupera todas las contraseñas de la base de datos.
+    """
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT site, username, password FROM passwords")
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def delete_password(site, user):
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM passwords WHERE site=? AND username=?", (site, user))
+    conn.commit()
+    conn.close()
+
