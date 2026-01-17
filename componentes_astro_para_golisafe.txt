@@ -1,0 +1,173 @@
+# Estructura de componentes Astro para la landing de **Golisafe**
+
+A continuación tienes varios componentes `.astro` listos para usar (Logo, Header, Hero, Features, CTA y Footer) y una página `index.astro` que los importa. Están escritos para usarse con TailwindCSS (clases utilitarias).
+
+---
+
+## `src/components/Logo.astro`
+
+```astro
+---
+// Logo.astro
+const { size = 40 } = Astro.props;
+---
+<a class="inline-flex items-center gap-3" href="/">
+  <div class="flex items-center justify-center rounded-2xl bg-[#006b75]" style={`width: ${size}px; height: ${size}px`}>
+    <!-- símbolo simplificado tipo "G" -> placeholder SVG -->
+    <svg width="60%" height="60%" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+      <path d="M4 12a8 8 0 1 1 8 8v-4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M12 8h4" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </div>
+  <span class="font-semibold text-lg text-slate-800">Golisafe</span>
+</a>
+```
+
+---
+
+## `src/components/Header.astro`
+
+```astro
+---
+import Logo from './Logo.astro';
+const { sticky = true } = Astro.props;
+---
+<header class={`w-full ${sticky ? 'sticky top-0 backdrop-blur bg-white/60' : ''} z-40 border-b` }>
+  <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+    <Logo />
+    <nav class="hidden md:flex items-center gap-6 text-sm">
+      <a href="#features" class="hover:underline">Características</a>
+      <a href="#how-it-works" class="hover:underline">Cómo funciona</a>
+      <a href="#pricing" class="hover:underline">Precios</a>
+      <a href="#contact" class="px-3 py-1 rounded-md border">Acceder</a>
+    </nav>
+    <div class="md:hidden">
+      <!-- botón de menú (placeholder) -->
+      <button aria-label="Abrir menú" class="p-2 rounded-md border">☰</button>
+    </div>
+  </div>
+</header>
+```
+
+---
+
+## `src/components/Hero.astro`
+
+```astro
+---
+const { eyebrow = 'Gestor de contraseñas', title = 'Seguridad portátil, simple y poderosa', description = 'Golisafe guarda y sincroniza tus contraseñas de manera segura. Accede desde cualquier dispositivo con cifrado robusto y una UX minimalista.' } = Astro.props;
+---
+<section class="bg-gradient-to-b from-white to-slate-50 py-20">
+  <div class="max-w-6xl mx-auto px-4 text-center">
+    <p class="text-sm text-slate-500 mb-4">{eyebrow}</p>
+    <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">{title}</h1>
+    <p class="max-w-2xl mx-auto text-slate-600 mb-8">{description}</p>
+    <div class="flex items-center justify-center gap-4">
+      <a href="#signup" class="px-6 py-3 rounded-2xl bg-[#006b75] text-white font-medium shadow">Comenzar gratis</a>
+      <a href="#how-it-works" class="px-6 py-3 rounded-2xl border">Saber más</a>
+    </div>
+  </div>
+</section>
+```
+
+---
+
+## `src/components/Features.astro`
+
+```astro
+---
+const features = Astro.props.features ?? [
+  { title: 'Cifrado de extremo a extremo', desc: 'Tus datos nunca se almacenan sin cifrar.' },
+  { title: 'Sincronización entre dispositivos', desc: 'Accede desde tu PC, móvil y navegador.' },
+  { title: 'Autocompletado seguro', desc: 'Rellena credenciales de forma rápida y segura.' },
+];
+---
+<section id="features" class="py-16">
+  <div class="max-w-6xl mx-auto px-4">
+    <h2 class="text-2xl font-bold mb-6">Características principales</h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {features.map(feature => (
+        <div class="p-6 border rounded-2xl bg-white shadow-sm">
+          <h3 class="font-semibold mb-2">{feature.title}</h3>
+          <p class="text-sm text-slate-600">{feature.desc}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+```
+
+---
+
+## `src/components/CTA.astro`
+
+```astro
+---
+const { text = 'Comienza con Golisafe hoy', cta = 'Crear cuenta' } = Astro.props;
+---
+<section class="py-12 bg-[#f8fafb]">
+  <div class="max-w-4xl mx-auto px-4 text-center">
+    <h3 class="text-xl font-bold mb-3">{text}</h3>
+    <a id="signup" href="/signup" class="inline-block px-6 py-3 rounded-2xl bg-[#006b75] text-white font-medium">{cta}</a>
+  </div>
+</section>
+```
+
+---
+
+## `src/components/Footer.astro`
+
+```astro
+---
+---
+<footer class="border-t mt-12">
+  <div class="max-w-6xl mx-auto px-4 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <a href="/" class="inline-flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-[#006b75] flex items-center justify-center text-white">G</div>
+        <span class="font-semibold">Golisafe</span>
+      </a>
+    </div>
+    <p class="text-sm text-slate-500">© {new Date().getFullYear()} Golisafe. Todos los derechos reservados.</p>
+  </div>
+</footer>
+```
+
+---
+
+## `src/pages/index.astro` (ejemplo de uso)
+
+```astro
+---
+import Header from '../components/Header.astro';
+import Hero from '../components/Hero.astro';
+import Features from '../components/Features.astro';
+import CTA from '../components/CTA.astro';
+import Footer from '../components/Footer.astro';
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Golisafe — Gestor de contraseñas</title>
+  </head>
+  <body class="antialiased text-slate-900 bg-white">
+    <Header />
+    <main>
+      <Hero />
+      <Features />
+      <CTA />
+    </main>
+    <Footer />
+  </body>
+</html>
+```
+
+---
+
+### Notas y recomendaciones
+
+- Estos componentes usan clases de Tailwind. Si aún no lo tienes instalado en tu proyecto Astro, añade Tailwind siguiendo la guía oficial de Astro + Tailwind.
+- Puedes parametrizar más props en cada componente (por ejemplo, iconos SVG, variantes de color o tamaños).
+- ¿Quieres que convierta alguno de estos componentes a TypeScript (`.ts`/`tsx`), añadir tests, o generar variantes (dark mode, modal de login, integración con OAuth)?
