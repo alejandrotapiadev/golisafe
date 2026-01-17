@@ -4,6 +4,7 @@ Conexion y operaciones con la base de datos. SQLite
 """
 import sqlite3
 import os
+import sys
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -12,11 +13,32 @@ db_folder = os.getenv("DB_FOLDER", "data")
 db_name = os.getenv("DB_NAME", "password.db")
 
 # ruta donde se creara la base de datos
-DB_PATH = os.path.join(
+"""DB_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     db_folder,
     db_name
-)
+)"""
+
+def get_db_path():
+    """
+    Devuelve la ruta absoluta de la base de datos según si estamos
+    ejecutando desde un .exe o desde Python normal.
+    """
+    if getattr(sys, "frozen", False):
+        # Estamos ejecutando desde un .exe
+        base_dir = os.path.dirname(sys.executable)
+    else:
+        # Ejecutando como script Python
+        base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+    # Carpeta donde se guardará la base de datos
+    data_dir = os.path.join(base_dir, db_folder)
+    os.makedirs(data_dir, exist_ok=True)  # crea la carpeta si no existe
+
+    return os.path.join(data_dir, db_name)
+
+# Ruta final de la base de datos
+DB_PATH = get_db_path()
 
 def init_db():
     """
