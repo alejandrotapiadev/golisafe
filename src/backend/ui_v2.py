@@ -8,6 +8,21 @@ import tkinter as tk
 from screeninfo import get_monitors
 from backend.database import init_db, save_password, getAllPasswords, delete_password
 import os
+import sys
+
+from frontend import app
+
+def resource_path(relative_path):
+    """
+    Devuelve la ruta absoluta a un recurso,
+    compatible con PyInstaller (.exe) y desarrollo normal.
+    """
+    try:
+        # PyInstaller crea una carpeta temporal con los assets
+        base_path = sys._MEIPASS
+    except AttributeError:
+        base_path = os.path.abspath(".")
+    return os.path.join(base_path, relative_path)
 
 
 def start_app():
@@ -25,8 +40,7 @@ def start_app():
     app.minsize(600, 400)
 
     # Icono
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    icon_path = os.path.normpath(os.path.join(base_dir, "..", "assets", "icon", "logo4.ico"))
+    icon_path = resource_path("assets/icon/logo4.ico")
     app.iconbitmap(icon_path)
 
     # Tipografía base
