@@ -3,7 +3,7 @@ Punto de entrada a la aplicación GoliSafe.
 
 """
 
-from backend.ui import start_app
+from backend.ui_v2 import start_app
 from backend.crypto import generar_llave_maestra, cargar_llave_maestra
 
 # Genera la llave solo si no existe
